@@ -4,11 +4,17 @@
 // that uses this DLL. This way any other project whose source files include this file see 
 // KSDLL_API functions as being imported from a DLL, whereas this DLL sees symbols
 // defined with this macro as being exported.
-#ifdef KSDLL_EXPORTS
+/*#ifdef KSDLL_EXPORTS
 #define KSDLL_API __declspec(dllexport)
 #else
 #define KSDLL_API __declspec(dllimport)
-#endif
+#endif*/
+#define KSDLL_API extern "C" __declspec(dllexport)
 
+#define WH_NUM (WH_MAX-WH_MIN+1)
+HINSTANCE handle = NULL;
 
-KSDLL_API extern int KSDLLadd(int, int);
+static HOOKPROC callbacks[WH_NUM];
+
+KSDLL_API int KSDLLadd(int a, int b);
+KSDLL_API int SetHookCallback(HOOKPROC callback, INT hookID);

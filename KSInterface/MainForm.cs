@@ -13,8 +13,20 @@ namespace KSInterface
 {
     public partial class MainForm : Form
     {
-        [DllImport("KSDll.dll", EntryPoint="#1")]
+        [DllImport("KSDll.dll", EntryPoint="_KSDLLadd@8")]
         public static extern int KSDLLadd(int a, int b);
+
+        [DllImport("KSDll.dll", EntryPoint = "_SetHookCallback@8")]
+        private static extern int SetHookCallback(HookCallback hookCallback, HookID hookID);
+
+        protected delegate void HookCallback(int code, UIntPtr wparam, IntPtr lparam);
+        private enum HookID
+        {
+            JournalRecord = 0,
+            JournalPlayback = 1,
+            KeyboardLL = 13,
+            MouseLL = 14
+        }
 
         public MainForm()
         {

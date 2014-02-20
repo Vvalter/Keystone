@@ -4,7 +4,14 @@
 #include "stdafx.h"
 #include "KSDll.h"
 
-KSDLL_API int fnKSDll(int a, int b)
+KSDLL_API  int KSDLLadd(int a, int b)
 {
-	return 42;
+	return (int) handle;
+}
+
+KSDLL_API int SetHookCallback(HOOKPROC callback, INT hookID) 
+{
+	callbacks[hookID+1] = callback;
+	SetWindowsHookEx(hookID, callback, handle, 0);
+	return 0;
 }
