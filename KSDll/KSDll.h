@@ -12,9 +12,15 @@
 #define KSDLL_API extern "C" __declspec(dllexport)
 
 #define WH_NUM (WH_MAX-WH_MIN+1)
+
+typedef VOID (*FUNC) (INT, WPARAM, LPARAM);
+
 HINSTANCE handle = NULL;
 
-static HOOKPROC callbacks[WH_NUM];
+static HHOOK hook = NULL;
+static FUNC callback = NULL;
 
-KSDLL_API int KSDLLadd(int a, int b);
-KSDLL_API int SetHookCallback(HOOKPROC callback, INT hookID);
+KSDLL_API HHOOK SetKeyboardCallback(FUNC callback);
+KSDLL_API VOID RemoveHook();
+
+LRESULT CALLBACK Wrapper(INT code, WPARAM wparam, LPARAM lparam);

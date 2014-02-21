@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace KSInterface
 {
@@ -16,10 +17,13 @@ namespace KSInterface
         [DllImport("KSDll.dll", EntryPoint="_KSDLLadd@8")]
         public static extern int KSDLLadd(int a, int b);
 
-        [DllImport("KSDll.dll", EntryPoint = "_SetHookCallback@8")]
-        private static extern int SetHookCallback(HookCallback hookCallback, HookID hookID);
+        [DllImport("KSDll.dll", EntryPoint = "_SetKeyboardCallback@4")]
+        private static extern IntPtr SetKeyboardCallback(HookCallback hc);
 
-        protected delegate void HookCallback(int code, UIntPtr wparam, IntPtr lparam);
+        private delegate void HookCallback(int code, UIntPtr wparam, IntPtr lparam);
+        private HookCallback hc = null;// = new HookCallback(KeyboardEvent);
+        private bool hooked = false;
+
         private enum HookID
         {
             JournalRecord = 0,
@@ -31,8 +35,21 @@ namespace KSInterface
         public MainForm()
         {
             InitializeComponent();
+            hc = new HookCallback(KeyboardEvent);
+
             Log("Initialized");
-            Log("1+1: " + KSDLLadd(1, 1));       
+        }
+
+        int i = 0;
+        //[MethodImpl(MethodImplOptions.NoInlining)]
+        private void KeyboardEvent(int code, UIntPtr wparam, IntPtr lparam)
+        {
+            System.Console.Write((i++).ToString() + '\n');
+            /*try
+            {
+                Log("KeyboardEvent");
+                Log(code.ToString());
+            } catch (Exception e) {}*/
         }
 
         private void Log(string text, string colorName = "Black")
@@ -46,17 +63,30 @@ namespace KSInterface
 
         private void Start_Click(object sender, EventArgs e)
         {
-            Log("Started");
+            if (hooked)
+            {
+                Log("Already hooked");
+            }
+            else
+            {
+                SetKeyboardCallback(new HookCallback(KeyboardEvent));
+                hooked = true;
+                Log("Started");
+            }
         }
 
         private void End_Click(object sender, EventArgs e)
         {
-            Log("Terminated");
-        }
-
-        private void rtbLog_TextChanged(object sender, EventArgs e)
-        {
-
+            if (hooked)
+            {
+                Log("Terminated");
+                Log(KSDLLadd(0, 0).ToString());
+                hooked = false;
+            }
+            else
+            {
+                Log("Not hooked");
+            }
         }
     }
 }

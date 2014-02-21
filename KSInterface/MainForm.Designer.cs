@@ -62,7 +62,6 @@
             this.rtbLog.Size = new System.Drawing.Size(156, 254);
             this.rtbLog.TabIndex = 2;
             this.rtbLog.Text = "";
-            this.rtbLog.TextChanged += new System.EventHandler(this.rtbLog_TextChanged);
             // 
             // MainForm
             // 
