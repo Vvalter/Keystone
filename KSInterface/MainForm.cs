@@ -14,17 +14,17 @@ namespace KSInterface
 {
     public partial class MainForm : Form
     {
-        [DllImport("KSDll.dll", EntryPoint="_KSDLLadd@8")]
+        [DllImport("KSDll.dll", EntryPoint = "KSDLLadd", CallingConvention = CallingConvention.Cdecl)]
         public static extern int KSDLLadd(int a, int b);
 
-        [DllImport("KSDll.dll", EntryPoint = "_SetKeyboardCallback@4")]
+        [DllImport("KSDll.dll", EntryPoint = "SetKeyboardCallback", CallingConvention=CallingConvention.Cdecl)]
         private static extern IntPtr SetKeyboardCallback(HookCallback hc);
 
-        [DllImport("KSDll.dll", EntryPoint = "_RemoveHook@0")]
+        [DllImport("KSDll.dll", EntryPoint = "RemoveHook", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool RemoveHook();
 
-        private delegate void HookCallback(int code, UIntPtr wparam, IntPtr lparam);
-        private static HookCallback hc = null;// = new HookCallback(KeyboardEvent);
+        public delegate void HookCallback(int code, UIntPtr wparam, IntPtr lparam);
+
         private bool hooked = false;
 
         private enum HookID
@@ -38,14 +38,12 @@ namespace KSInterface
         public MainForm()
         {
             InitializeComponent();
-            hc = new HookCallback(KeyboardEvent);
-
             Log("Initialized");
         }
 
         int i = 0;
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void KeyboardEvent(int code, UIntPtr wparam, IntPtr lparam)
+        public void KeyboardEvent(int code, UIntPtr wparam, IntPtr lparam)
         {
             try
             {
@@ -77,7 +75,9 @@ namespace KSInterface
             }
             else
             {
-                SetKeyboardCallback(new HookCallback(KeyboardEvent));
+                HookCallback hc = new HookCallback(KeyboardEvent);
+                GarbageCollectionSucks.SaveCallback(hc);
+                SetKeyboardCallback(hc);
                 hooked = true;
                 Log("Started");
             }
@@ -94,6 +94,14 @@ namespace KSInterface
             {
                 Log("Not hooked");
             }
+        }
+    }
+    public static class GarbageCollectionSucks
+    {
+        private static MainForm.HookCallback save;
+        public static void SaveCallback(MainForm.HookCallback hc)
+        {
+            save = hc;
         }
     }
 }

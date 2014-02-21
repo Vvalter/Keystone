@@ -16,11 +16,13 @@
 typedef VOID (*FUNC) (INT, WPARAM, LPARAM);
 
 HINSTANCE handle = NULL;
+INPUT MouseMovement;
+
+KSDLL_API HHOOK SetKeyboardCallback(FUNC callback);
+KSDLL_API BOOL RemoveHook();
+KSDLL_API VOID SetMousePosition(INT x, INT y);
 
 static HHOOK hook = NULL;
 static FUNC callback = NULL;
 
-KSDLL_API HHOOK SetKeyboardCallback(FUNC callback);
-KSDLL_API BOOL RemoveHook();
-
-LRESULT CALLBACK Wrapper(INT code, WPARAM wparam, LPARAM lparam);
+static LRESULT CALLBACK Wrapper(INT code, WPARAM wparam, LPARAM lparam);
