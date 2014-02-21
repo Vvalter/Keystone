@@ -47,8 +47,9 @@ namespace KSInterface
         {
             try
             {
+                i++;
                 //System.Console.Write((i++).ToString() + '\n');
-                Log((i++).ToString());
+                //Log((i++).ToString());
             }
             catch (Exception) { }
             /*try
@@ -88,6 +89,7 @@ namespace KSInterface
             if (hooked)
             {
                 Log("Terminated " + RemoveHook().ToString());
+                Log("i: " + i.ToString());
                 hooked = false;
             }
             else
