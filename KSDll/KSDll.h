@@ -21,6 +21,6 @@ static HHOOK hook = NULL;
 static FUNC callback = NULL;
 
 KSDLL_API HHOOK SetKeyboardCallback(FUNC callback);
-KSDLL_API VOID RemoveHook();
+KSDLL_API BOOL RemoveHook();
 
 LRESULT CALLBACK Wrapper(INT code, WPARAM wparam, LPARAM lparam);

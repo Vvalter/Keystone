@@ -12,14 +12,13 @@ KSDLL_API  int KSDLLadd(int a, int b)
 KSDLL_API HHOOK SetKeyboardCallback(FUNC cb) 
 {
 	callback = cb;
-	//hook = SetWindowsHookEx(WH_KEYBOARD, Wrapper, NULL, GetCurrentThreadId());
 	hook = SetWindowsHookEx(WH_KEYBOARD_LL, Wrapper, handle, 0);
 	return hook;
 }
 
-KSDLL_API VOID RemoveHook() 
+KSDLL_API BOOL RemoveHook() 
 {
-	UnhookWindowsHookEx(hook);
+	return UnhookWindowsHookEx(hook);
 }
 
 LRESULT CALLBACK Wrapper(INT code, WPARAM wparam, LPARAM lparam)
