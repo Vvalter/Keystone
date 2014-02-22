@@ -20,11 +20,19 @@ INPUT MouseMovement;
 
 KSDLL_API HHOOK SetKeyboardCallback(FUNC callback);
 KSDLL_API BOOL RemoveHook();
+
+KSDLL_API VOID SetResolution(INT x, INT y);
+KSDLL_API VOID 
+
 KSDLL_API VOID SetMousePosition(INT x, INT y);
 KSDLL_API VOID MoveMouse(INT dx, INT dy);
 KSDLL_API VOID PressMouse(BOOL down);
 
+
 static HHOOK hook = NULL;
 static FUNC callback = NULL;
+
+static INT res_x = 1920, res_y = 1080;
+static INT position_x, position_y;
 
 static LRESULT CALLBACK Wrapper(INT code, WPARAM wparam, LPARAM lparam);
