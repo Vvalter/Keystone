@@ -14,49 +14,12 @@ namespace KSInterface
 {
     public partial class MainForm : Form
     {
-        [DllImport("KSDll.dll", EntryPoint = "KSDLLadd", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int KSDLLadd(int a, int b);
-
-        [DllImport("KSDll.dll", EntryPoint = "SetKeyboardCallback", CallingConvention=CallingConvention.Cdecl)]
-        private static extern IntPtr SetKeyboardCallback(HookCallback hc);
-
-        [DllImport("KSDll.dll", EntryPoint = "RemoveHook", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool RemoveHook();
-
-        public delegate void HookCallback(int code, UIntPtr wparam, IntPtr lparam);
-
         private bool hooked = false;
-
-        private enum HookID
-        {
-            JournalRecord = 0,
-            JournalPlayback = 1,
-            KeyboardLL = 13,
-            MouseLL = 14
-        }
 
         public MainForm()
         {
             InitializeComponent();
             Log("Initialized");
-        }
-
-        int i = 0;
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public void KeyboardEvent(int code, UIntPtr wparam, IntPtr lparam)
-        {
-            try
-            {
-                i++;
-                //System.Console.Write((i++).ToString() + '\n');
-                //Log((i++).ToString());
-            }
-            catch (Exception) { }
-            /*try
-            {
-                Log("KeyboardEvent");
-                Log(code.ToString());
-            } catch (Exception e) {}*/
         }
 
         private void Log(string text, string colorName = "Black")
@@ -67,7 +30,10 @@ namespace KSInterface
             rtbLog.ScrollToCaret();
             rtbLog.Update();
         }
-
+        private void MyCallback(int code, UInt32 wparam, Int32 lparam)
+        {
+            Log("MyCallback");
+        }
         private void Start_Click(object sender, EventArgs e)
         {
             if (hooked)
@@ -76,9 +42,7 @@ namespace KSInterface
             }
             else
             {
-                HookCallback hc = new HookCallback(KeyboardEvent);
-                GarbageCollectionSucks.SaveCallback(hc);
-                SetKeyboardCallback(hc);
+                KSDllWrapper.InstallHook(new KSDllWrapper.Callback(MyCallback));
                 hooked = true;
                 Log("Started");
             }
@@ -88,8 +52,8 @@ namespace KSInterface
         {
             if (hooked)
             {
-                Log("Terminated " + RemoveHook().ToString());
-                Log("i: " + i.ToString());
+                Log("Terminated ");
+                KSDllWrapper.UninstallHook();
                 hooked = false;
             }
             else
@@ -97,13 +61,14 @@ namespace KSInterface
                 Log("Not hooked");
             }
         }
-    }
-    public static class GarbageCollectionSucks
-    {
-        private static MainForm.HookCallback save;
-        public static void SaveCallback(MainForm.HookCallback hc)
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            save = hc;
+            if (hooked)
+            {
+                KSDllWrapper.UninstallHook();
+            }
         }
+
     }
 }
