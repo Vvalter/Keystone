@@ -9,66 +9,76 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Windows;
 
 namespace KSInterface
 {
     public partial class MainForm : Form
     {
-        private bool hooked = false;
-
+        private KeyboardController _controller;
+        private Thread t;
+        private bool running = false;
         public MainForm()
         {
+            this.TopMost = true;
+            KSDllWrapper.init();
             InitializeComponent();
-            Log("Initialized");
         }
 
-        private void Log(string text, string colorName = "Black")
+        private delegate void LogCallback(string text, string colorName);
+        public void Log(string text, string colorName = "Black")
         {
+            if (rtbLog.InvokeRequired)
+            {
+                rtbLog.Invoke(new LogCallback(Log), new object[]{text, colorName});
+                return;
+            }
             rtbLog.SelectionColor = Color.FromName(colorName);
             rtbLog.AppendText(DateTime.Now.ToString("HH:mm:ss")+ ":  ");
             rtbLog.AppendText(text + "\n");
             rtbLog.ScrollToCaret();
             rtbLog.Update();
         }
-        private void MyCallback(int code, UInt32 wparam, Int32 lparam)
-        {
-            Log("MyCallback");
-        }
         private void Start_Click(object sender, EventArgs e)
         {
-            if (hooked)
+            try
             {
-                Log("Already hooked");
-            }
-            else
+                KSDllWrapper.Rectangle r = KSDllWrapper.GetHearthstoneWindow();
+                Log(String.Format("x:{0} y:{1} width:{2} height:{3}", r.x, r.y, r.width, r.height));
+            } 
+            catch (Win32Exception)
             {
-                KSDllWrapper.InstallHook(new KSDllWrapper.Callback(MyCallback));
-                hooked = true;
-                Log("Started");
+                Log("Hearthstone not running!");
             }
+            return;
+            if (running)
+            {
+                Log("Already running");
+                return;
+            }
+            _controller = new KeyboardController(this, 0, 0, 1920, 1080);
+            t = new Thread(_controller.KeyboardLoop);
+            t.Name = "Controller Thread";
+            t.IsBackground = true;
+            t.Start();
+
+            running = true;
         }
 
         private void End_Click(object sender, EventArgs e)
         {
-            if (hooked)
+            if (running)
             {
-                Log("Terminated ");
-                KSDllWrapper.UninstallHook();
-                hooked = false;
+                Log("Ended");
             }
             else
             {
-                Log("Not hooked");
+                Log("Not running");
             }
+            t.Abort();
+            _controller = null;
+            running = false;
         }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (hooked)
-            {
-                KSDllWrapper.UninstallHook();
-            }
-        }
-
     }
 }

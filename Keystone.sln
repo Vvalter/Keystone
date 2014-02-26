@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KSInterface", "KSInterface\KSInterface.csproj", "{67DF4D21-887F-4E2E-9526-F339D6C9624A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52D9A49C-99D1-4BD2-9B44-D99785E6C947} = {52D9A49C-99D1-4BD2-9B44-D99785E6C947}
