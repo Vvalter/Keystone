@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace KSInterface
 {
     class KeyboardController : Board
     {
         private MainForm _mainForm;
-
+        
         private int friendly_mobs_x = 0;
         private int enemy_mobs_x = 0;
-        private bool hero = true;
+        private bool hero_selected = true;
         private int cards_x = 0;
         private YLevel current_level = YLevel.FRIENDLY_CARDS;
         private Point position;
-        public KeyboardController (MainForm mf, int offset_x, int offset_y, int res_x, int res_y) 
-            : base(offset_x, offset_y, res_x, res_y)
+        public KeyboardController (MainForm mf) 
         {
             _mainForm = mf;
             position = middle;
@@ -28,7 +28,6 @@ namespace KSInterface
                 current_level = YLevel.FRIENDLY_CARDS;
             }
         }
-
         public void Down()
         {
             current_level++;
@@ -37,7 +36,6 @@ namespace KSInterface
                 current_level = YLevel.ENEMY_HERO;
             }
         }
-
         public void Right()
         {
             switch (current_level)
@@ -59,76 +57,154 @@ namespace KSInterface
                     }
                     break;
                 case YLevel.FRIENDLY_HERO:
-                    hero = !hero;
+                    hero_selected = !hero_selected;
                     break;
 
                 case YLevel.FRIENDLY_CARDS: // TODO
                     break;
             }
         }
-        public void UpdatePosition()
+        public void Left()
         {
             switch (current_level)
             {
                 case YLevel.ENEMY_HERO:
-                    position.x = enemy_hero.x;
-                    position.y = enemy_hero.y;
                     break;
                 case YLevel.ENEMY_MOBS:
-                    position.y = enemy_y;
-                    position.x = middle.x + (enemy_mobs_x * mob_width)
-                        - mob_width * (enemy_mobs / 2) - (mob_width / 2) * ((enemy_mobs % 2)-1);
+                    enemy_mobs_x--;
+                    if (enemy_mobs_x < 0)
+                    {
+                        enemy_mobs_x = enemy_mobs - 1;
+                    }
                     break;
                 case YLevel.FRIENDLY_MOBS:
-                    position.y = friendly_y;
-                    position.x = middle.x + (friendly_mobs_x * mob_width)
-                        - mob_width * (friendly_mobs / 2) - (mob_width / 2) * ((friendly_mobs % 2)-1);
+                    friendly_mobs_x--;
+                    if (friendly_mobs_x < 0)
+                    {
+                        friendly_mobs_x = friendly_mobs - 1;
+                    }
                     break;
                 case YLevel.FRIENDLY_HERO:
-                    if (hero)
+                    hero_selected = !hero_selected;
+                    break;
+
+                case YLevel.FRIENDLY_CARDS: // TODO
+                    break;
+            }
+        }
+        private void ChangeCards(int num)
+        {
+            switch (current_level)
+            {
+                case YLevel.ENEMY_MOBS:
+                    enemy_mobs += num;
+                    if (enemy_mobs < 0)
                     {
-                        position.x = friendly_hero.x;
-                        position.y = friendly_hero.y;
+                        enemy_mobs = 0;
+                    }
+                    if (enemy_mobs > 7)
+                    {
+                        enemy_mobs = 7;
+                    }
+                    _mainForm.SetEnemyCards(enemy_mobs);
+                    break;
+                case YLevel.FRIENDLY_MOBS:
+                    friendly_mobs += num;
+                    if (friendly_mobs < 0)
+                    {
+                        friendly_mobs = 0;
+                    }
+                    if (friendly_mobs > 7)
+                    {
+                        friendly_mobs = 7;
+                    }
+                    _mainForm.SetFriendlyCards(friendly_mobs);
+                    break;
+                case YLevel.FRIENDLY_CARDS:
+                    // TODO
+                    break;
+            }
+        }
+        public void UpdatePosition()
+        {
+            randomActive = true;
+            Point currentPoint = new Point(0,0);;
+            switch (current_level)
+            {
+                case YLevel.ENEMY_HERO:
+                    currentPoint = enemy;
+                    break;
+                case YLevel.ENEMY_MOBS:
+                    currentPoint = GetMob(true, enemy_mobs_x);
+                    /*position.y = enemy_y;
+                    position.x = middle.x + (enemy_mobs_x * mob_width)
+                        - mob_width * (enemy_mobs / 2) - (mob_width / 2) * ((enemy_mobs % 2)-1);*/
+                    break;
+                case YLevel.FRIENDLY_MOBS:
+                    currentPoint = GetMob(false, friendly_mobs_x);
+                    /*position.y = friendly_y;
+                    position.x = middle.x + (friendly_mobs_x * mob_width)
+                        - mob_width * (friendly_mobs / 2) - (mob_width / 2) * ((friendly_mobs % 2)-1);*/
+                    break;
+                case YLevel.FRIENDLY_HERO:
+                    if (hero_selected)
+                    {
+                        currentPoint = hero;
                     }
                     else
                     {
-                        position.x = ability.x;
-                        position.y = ability.y;
+                        currentPoint = ability;
                     }
                     break;
-                case YLevel.FRIENDLY_CARDS:// TODO 
-                    position.x = 700;
-                    position.y = 1020;
+                case YLevel.FRIENDLY_CARDS:
+                    currentPoint = end;
                     break;
             }
-
-            KSDllWrapper.SetMousePosition(GetNormalizedX(position.x), GetNormalizedY(position.y));
+            KSDllWrapper.SetMousePosition(currentPoint.x, currentPoint.y);
         }
         public void KeyboardLoop()
         {
             //Console.Write("Controller ready
             foreach (Keys k in KSDllWrapper.KeyInputs.GetConsumingEnumerable())
             {
+                bool updateNeeded = false;
                 switch (k)
                 {
                     case Keys.Down:
                     case Keys.J:
                         Down();
+                        updateNeeded = true;
                         break;
                     case Keys.Up:
                     case Keys.K:
                         Up();
+                        updateNeeded = true;
                         break;
                     case Keys.Left:
                     case Keys.H:
-                       // Left();
+                        Left();
+                        updateNeeded = true;
                         break;
                     case Keys.Right:
                     case Keys.L:
                         Right();
+                        updateNeeded = true;
+                        break;
+                    case Keys.Space:
+                        KSDllWrapper.PressMouse(true);
+                        KSDllWrapper.PressMouse(false);
+                        break;
+                    case Keys.Add:
+                        ChangeCards(1);
+                        break;
+                    case Keys.Subtract:
+                        ChangeCards(-1);
                         break;
                 }
-                UpdatePosition();
+                if (updateNeeded)
+                {
+                    UpdatePosition();
+                }
             }
         }
 

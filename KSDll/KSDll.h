@@ -7,12 +7,13 @@ typedef VOID (*FUNC) (BOOL, DWORD);
 HINSTANCE handle = NULL;
 
 /* Keyboard Hook */
-static HHOOK hook = NULL;
-static FUNC func = NULL;
-static LRESULT CALLBACK HookFunc(INT code, WPARAM wparam, LPARAM lparam);
+static FUNC funcKey, funcCBT;
+static HHOOK hookKey, hookCBT;
+static LRESULT CALLBACK HookKey(INT code, WPARAM wparam, LPARAM lparam);
+static LRESULT CALLBACK HookCBT(INT code, WPARAM wparam, LPARAM lparam);
 
-KSDLL_API HHOOK InstallHook(FUNC f);
-KSDLL_API BOOL UninstallHook();
+KSDLL_API HHOOK InstallHook(INT id, FUNC f);
+KSDLL_API BOOL UninstallHook(INT id);
 
 /* Input Managment */
 INPUT MouseMovement;

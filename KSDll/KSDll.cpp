@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "KSDll.h"
 
-/* Keyboard Hook */
-static LRESULT CALLBACK HookFunc(INT code, WPARAM wparam, LPARAM lparam)
+/* Hooks */
+static LRESULT CALLBACK HookKey(INT code, WPARAM wparam, LPARAM lparam)
 {
 	if (code < 0)
 	{
@@ -11,21 +11,51 @@ static LRESULT CALLBACK HookFunc(INT code, WPARAM wparam, LPARAM lparam)
 
 	BOOL down = (wparam == WM_KEYDOWN || wparam == WM_SYSKEYDOWN);
 	DWORD vkc = ((PKBDLLHOOKSTRUCT)lparam)->vkCode;
-	func(down, vkc);
+	funcKey(down, vkc);
+
 
 	return CallNextHookEx(NULL, code, wparam, lparam);
 }
 
-KSDLL_API HHOOK InstallHook(FUNC f) 
+static LRESULT CALLBACK HookCBT(INT code, WPARAM wparam, LPARAM lparam)
 {
-	func = f;
-	hook = SetWindowsHookEx(WH_KEYBOARD_LL, HookFunc, handle, 0);
-	return hook;
+	if (code < 0)
+	{
+		return CallNextHookEx(NULL, code, wparam, lparam);
+	}
+
+	funcCBT(true, wparam);
+
+	return CallNextHookEx(NULL, code, wparam, lparam);
 }
 
-KSDLL_API BOOL UninstallHook()
+KSDLL_API HHOOK InstallHook(INT id, FUNC f) 
 {
-	return UnhookWindowsHookEx(hook);
+	switch (id)
+	{
+	case WH_KEYBOARD_LL:
+		funcKey = f;
+		hookKey = SetWindowsHookEx(id, HookKey, handle, 0);
+		return hookKey;
+	case WH_CBT:
+		funcCBT = f;
+		hookCBT = SetWindowsHookEx(id, HookCBT, handle, 0);
+		return hookCBT;
+	default:
+		return NULL;
+	}
+}
+KSDLL_API BOOL UninstallHook(INT id)
+{
+	switch (id)
+	{
+	case WH_KEYBOARD_LL:
+		return UnhookWindowsHookEx(hookKey);
+	case WH_CBT:
+		return UnhookWindowsHookEx(hookCBT);
+	default:
+		return false;
+	}
 }
 
 /* Input Managment */
@@ -37,7 +67,6 @@ KSDLL_API VOID SetMousePosition(INT x, INT y)
 	 
 	SendInput(1, &MouseMovement, sizeof(INPUT));
 }
-
 KSDLL_API VOID MoveMouse(INT dx, INT dy) 
 {
 	MouseMovement.mi.dwFlags = MOUSEEVENTF_MOVE;
@@ -46,7 +75,6 @@ KSDLL_API VOID MoveMouse(INT dx, INT dy)
 	 
 	SendInput(1, &MouseMovement, sizeof(INPUT));
 }
-
 KSDLL_API VOID PressMouse(BOOL down) 
 {
 	MouseMovement.mi.dwFlags = (down) ? (MOUSEEVENTF_LEFTDOWN) : (MOUSEEVENTF_LEFTUP);

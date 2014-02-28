@@ -3,25 +3,30 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Collections.Concurrent;
+using System.Drawing;
+
 namespace KSInterface
 {
+    public enum ASPECTRATIO
+    {
+        R16_9, R16_10, R4_3
+    }
+
     static class KSDllWrapper
     {
         private delegate void Callback(bool down, int vkc);
-        private static Callback _func = new Callback(HookFunc); // Save it from GC
-        // TODO Why is init neccessary (not static constructor)
+        private static Callback _func = new Callback(KeyboardHookFunc); // Save it from GC
         public static void init()
         {
             KeyInputs = new BlockingCollection<Keys>(new ConcurrentQueue<Keys>());
-            InstallHook(_func);
+            InstallHook(HOOKID.WH_KEYBOARD_LL, _func);
         }
 
-        #region Keyboard Hook
+        #region Windows Hooks
 
         /* Keyboard Hook */
-
         public static BlockingCollection<Keys> KeyInputs;
-        private static void HookFunc(bool down, int vkc)
+        private static void KeyboardHookFunc(bool down, int vkc)
         {
             if (!down)
             {
@@ -29,11 +34,17 @@ namespace KSInterface
             }
         }
 
+        /* General Hooks */
+        private enum HOOKID {
+            WH_CBT = 5,
+            WH_KEYBOARD_LL = 13            
+        };
+
         [DllImport("KSDll.dll", EntryPoint="InstallHook", CallingConvention = CallingConvention.Cdecl, SetLastError=true)]
-        private static extern IntPtr _InstallHook(Callback c);
-        private static void InstallHook(Callback c)
+        private static extern IntPtr _InstallHook(HOOKID id, Callback c);
+        private static void InstallHook(HOOKID id, Callback c)
         {
-            IntPtr hook = _InstallHook(c);
+            IntPtr hook = _InstallHook(id, c);
             if (hook == IntPtr.Zero)
             {
                 Int32 err = Marshal.GetLastWin32Error();
@@ -42,10 +53,10 @@ namespace KSInterface
         }
 
         [DllImport("KSDll.dll", EntryPoint = "UninstallHook", CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
-        private static extern bool _UninstallHook();
-        private static void UninstallHook()
+        private static extern bool _UninstallHook(HOOKID id);
+        private static void UninstallHook(HOOKID id)
         {
-            bool success = _UninstallHook();
+            bool success = _UninstallHook(id);
 
             if (!success)
             {
@@ -54,8 +65,9 @@ namespace KSInterface
             }
         }
 
-        /* Input Managment */
+        #endregion
 
+        #region Mouse Movement
 
         [DllImport("KSDll.dll", EntryPoint = "SetMousePosition", CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
         public static extern void SetMousePosition(int x, int y);
@@ -66,9 +78,9 @@ namespace KSInterface
         [DllImport("KSDll.dll", EntryPoint = "PressMouse", CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
         public static extern void PressMouse(bool down);
 
+        #endregion
 
-        /* Window Managment */
-        
+        #region Window Managment
         [DllImport("User32.dll")]
         private static extern IntPtr FindWindowW([MarshalAs(UnmanagedType.LPWStr)] string className, [MarshalAs(UnmanagedType.LPWStr)] string windowName);
 
@@ -86,16 +98,16 @@ namespace KSInterface
 
         public struct Rectangle
         {
-            public long x, y;
-            public long width, height;
-            
+            public int x, y;
+            public int width, height;
+
             public Rectangle(long x, long y, long width, long height)
             {
-                this.x = x;
-                this.y = y;
+                this.x = (int)x;
+                this.y = (int)y;
 
-                this.width = width;
-                this.height = height;
+                this.width = (int)width;
+                this.height = (int)height;
             }
         }
 
@@ -109,6 +121,51 @@ namespace KSInterface
             }
             return new Rectangle(GetWindowX(hWnd)+3, GetWindowY(hWnd)+25, GetWindowWidth(hWnd), GetWindowHeight(hWnd));
         }
+
+        
+        public static ASPECTRATIO GetAspectRatio()
+        {
+            Rectangle r = GetHearthstoneWindow();
+            double tmp = r.width / 16.0;
+            switch ((int) Math.Round(r.height / tmp))
+            { 
+                case 9:
+                    return ASPECTRATIO.R16_9;
+                case 10:
+                    return ASPECTRATIO.R16_10;
+                case 12:
+                    return ASPECTRATIO.R4_3;
+                default:
+                    throw new Exception("Invalid Aspect Ratio found resolution: " + GetResolution());
+            }
+        }
+
+        public static string GetResolution()
+        {
+            Rectangle r = GetHearthstoneWindow();
+
+            if (r.height == 1000)
+            {
+                if (r.width == 1600)
+                {
+                    return "1600x1024";
+                }
+
+                if (r.width == 1680)
+                {
+                    return "1680x1050";
+                }
+
+                if (r.width == 1840)
+                {
+                    return "1920x1080";
+                }
+                return "error";
+            }
+
+            return r.width.ToString() + "x" + r.height.ToString();
+        }
+
         #endregion
     }
 }
