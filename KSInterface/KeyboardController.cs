@@ -14,11 +14,17 @@ namespace KSInterface
         private int cards_x = 0;
         private YLevel current_level = YLevel.FRIENDLY_CARDS;
         private Point position;
+        private Thread keyThread;
         public KeyboardController (MainForm mf) 
         {
             _mainForm = mf;
             position = middle;
-            /* Find Hearthstone Window */
+
+            Update();
+            keyThread = new Thread(KeyboardLoop);
+            keyThread.Name = "Controller Thread";
+            keyThread.IsBackground = true;
+            keyThread.Start();
         }
         public void Up()
         {
@@ -207,6 +213,10 @@ namespace KSInterface
                 }
             }
         }
-
+	public override void Stop()
+	{
+        keyThread.Abort();
+        base.Stop();
+	}
     }
 }

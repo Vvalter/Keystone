@@ -96,20 +96,6 @@ namespace KSInterface
         [DllImport("KSDll.dll", EntryPoint = "GetWindowHeight", CallingConvention = CallingConvention.Cdecl)]
         private static extern long GetWindowHeight(IntPtr hWnd);
 
-        public struct Rectangle
-        {
-            public int x, y;
-            public int width, height;
-
-            public Rectangle(long x, long y, long width, long height)
-            {
-                this.x = (int)x;
-                this.y = (int)y;
-
-                this.width = (int)width;
-                this.height = (int)height;
-            }
-        }
 
         public static Rectangle GetHearthstoneWindow()
         {

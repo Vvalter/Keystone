@@ -11,22 +11,21 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
-
 namespace KSInterface
 {
     public partial class MainForm : Form
     {
+        public static MainForm mf;
         private KeyboardController _controller;
-        private Thread _controllerThread;
         private bool _running = false;
 
         private delegate void LogCallback(string text, string colorName);
         private delegate void CardCallback(int cards);
         public MainForm()
         {
+            mf = this;
             this.TopMost = true;
             KSDllWrapper.init();
-            _controller = new KeyboardController(this);
             InitializeComponent();
         }
         public void Log(string text, string colorName = "Black")
@@ -62,9 +61,22 @@ namespace KSInterface
             textBox2.Text = cards.ToString();
             textBox2.Update();
         }
+        private delegate void ImageCallback(Image img);
+	public void SetImage(Image img)
+        {
+            if (pictureBox1.InvokeRequired)
+            {
+                pictureBox1.Invoke(new ImageCallback(SetImage), new object[] { img });
+                return;
+            }
+            if (pictureBox1.Image != null)
+            {
+                pictureBox1.Image.Dispose();
+            }
+            pictureBox1.Image = img;
+        }
         private void Start_Click(object sender, EventArgs e)
         {
-            ImageHelper.GetBitmap();
             if (_running)
             {
                 Log("Already running", "red");
@@ -80,17 +92,7 @@ namespace KSInterface
                 return;
             }
 
-            if (!_controller.Update())
-            {
-                Log("Unable to find Hearthstone", "red");
-                return;
-            }
-
-            _controllerThread = new Thread(_controller.KeyboardLoop);
-            _controllerThread.Name = "Controller Thread";
-            _controllerThread.IsBackground = true;
-            _controllerThread.Start();
-
+            _controller = new KeyboardController(this);
             _running = true;
         }
         private void End_Click(object sender, EventArgs e)
@@ -98,8 +100,9 @@ namespace KSInterface
             if (_running)
             {
                 Log("Ended");
-                _controllerThread.Abort();
+		// TODO
                 _running = false;
+                _controller.Stop();
             }
             else
             {

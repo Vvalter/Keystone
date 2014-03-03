@@ -30,17 +30,19 @@
         {
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.rtbLog = new System.Windows.Forms.RichTextBox();
             this.Start = new System.Windows.Forms.Button();
             this.End = new System.Windows.Forms.Button();
             this.UpdateButton = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.textBox2 = new System.Windows.Forms.TextBox();
-            this.rtbLog = new System.Windows.Forms.RichTextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -56,10 +58,10 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.rtbLog);
+            this.splitContainer1.Panel2.Controls.Add(this.pictureBox1);
             this.splitContainer1.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.splitContainer1.Size = new System.Drawing.Size(473, 460);
-            this.splitContainer1.SplitterDistance = 87;
+            this.splitContainer1.Size = new System.Drawing.Size(570, 423);
+            this.splitContainer1.SplitterDistance = 102;
             this.splitContainer1.TabIndex = 3;
             // 
             // tableLayoutPanel1
@@ -67,6 +69,7 @@
             this.tableLayoutPanel1.AutoSize = true;
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.rtbLog, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.Start, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.End, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.UpdateButton, 0, 2);
@@ -82,8 +85,19 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(87, 460);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(102, 423);
             this.tableLayoutPanel1.TabIndex = 3;
+            // 
+            // rtbLog
+            // 
+            this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.rtbLog.Location = new System.Drawing.Point(3, 142);
+            this.rtbLog.Name = "rtbLog";
+            this.rtbLog.ReadOnly = true;
+            this.rtbLog.Size = new System.Drawing.Size(96, 278);
+            this.rtbLog.TabIndex = 2;
+            this.rtbLog.Text = "";
             // 
             // Start
             // 
@@ -105,10 +119,10 @@
             this.End.UseVisualStyleBackColor = true;
             this.End.Click += new System.EventHandler(this.End_Click);
             // 
-            // Update
+            // UpdateButton
             // 
             this.UpdateButton.Location = new System.Drawing.Point(3, 61);
-            this.UpdateButton.Name = "Update";
+            this.UpdateButton.Name = "UpdateButton";
             this.UpdateButton.Size = new System.Drawing.Size(75, 23);
             this.UpdateButton.TabIndex = 2;
             this.UpdateButton.Text = "Update Board";
@@ -131,23 +145,24 @@
             this.textBox2.Size = new System.Drawing.Size(81, 20);
             this.textBox2.TabIndex = 4;
             // 
-            // rtbLog
+            // pictureBox1
             // 
-            this.rtbLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
-            this.rtbLog.Location = new System.Drawing.Point(0, 0);
-            this.rtbLog.Name = "rtbLog";
-            this.rtbLog.ReadOnly = true;
-            this.rtbLog.Size = new System.Drawing.Size(382, 460);
-            this.rtbLog.TabIndex = 2;
-            this.rtbLog.Text = "";
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox1.ErrorImage = null;
+            this.pictureBox1.InitialImage = null;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(464, 423);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 0;
+            this.pictureBox1.TabStop = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(473, 460);
+            this.ClientSize = new System.Drawing.Size(570, 423);
             this.Controls.Add(this.splitContainer1);
             this.Name = "MainForm";
             this.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -159,6 +174,7 @@
             this.splitContainer1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -173,6 +189,7 @@
         private System.Windows.Forms.Button UpdateButton;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.PictureBox pictureBox1;
 
 
     }

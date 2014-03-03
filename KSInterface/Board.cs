@@ -5,7 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Threading;
 using System.Windows.Forms;
+
+using AForge.Imaging;
+using AForge.Imaging.Filters;
+
 namespace KSInterface
 {
     class Point
@@ -18,17 +23,31 @@ namespace KSInterface
         }
         public Point() : this(0,0) {}
     }
+    public struct Rectangle
+    {
+        public int x, y;
+        public int width, height;
+
+        public Rectangle(long x, long y, long width, long height)
+        {
+            this.x = (int)x;
+            this.y = (int)y;
+
+            this.width = (int)width;
+            this.height = (int)height;
+        }
+    }
     class Board
     {
+        private System.Threading.Timer timer;
         private Random random = new Random();
         protected bool randomActive = true;
+        protected bool realityActive = true;
         private double scale = 1.0;
         private double margin = 0.0;
 
-        protected Point offset, resolution;
-        
         protected int enemy_mobs = 4;
-        protected int friendly_mobs = 3;
+        protected int friendly_mobs = 1;
         protected int cards = 5;
         protected Point end
         {
@@ -48,11 +67,13 @@ namespace KSInterface
         }
         protected Point middle = new Point(512, 356);
         protected Point mob = new Point(100, 120);
+        protected int mobDistance = 65;
+        protected Point mobMin = new Point(82, 114);
         protected Point GetMob(bool enemy, int pos)
         {
             Point p = new Point();
             int num_mobs = (enemy) ? (enemy_mobs) : (friendly_mobs);
-            p.y = GetRealY(middle.y + (enemy ? (-mob.y / 2) : (mob.y / 2)) + GetRandom(50));
+            p.y = GetRealY(middle.y + (enemy ? (-mobDistance) : (mobDistance)) + GetRandom(50));
             p.x = middle.x;
             if (num_mobs % 2 == 0)
             {
@@ -63,7 +84,7 @@ namespace KSInterface
             p.x = GetRealX(p.x + GetRandom(40));
             return p;
         }
-        protected KSDllWrapper.Rectangle windowRect;
+        protected Rectangle windowRect;
         protected ASPECTRATIO aspect;
         protected enum YLevel {
             ENEMY_HERO = 0, ENEMY_MOBS = 1, FRIENDLY_MOBS = 2, FRIENDLY_HERO = 3, FRIENDLY_CARDS = 4
@@ -83,11 +104,25 @@ namespace KSInterface
         }
         private int GetRealX(double x)
         {
-            return (65535 * (windowRect.x + (int)Math.Round(x * scale + margin))) / Screen.PrimaryScreen.Bounds.Width;
+            if (realityActive)
+            {
+                return (65535 * (windowRect.x + (int)Math.Round(x * scale + margin))) / Screen.PrimaryScreen.Bounds.Width;
+            }
+            else
+            {
+                return (int)Math.Round(x);
+            }
         }
         private int GetRealY(double y)
         {
-            return (65535 * (windowRect.y + (int)Math.Round(y * scale))) / Screen.PrimaryScreen.Bounds.Height;
+            if (realityActive)
+            {
+                return (65535 * (windowRect.y + (int)Math.Round(y * scale))) / Screen.PrimaryScreen.Bounds.Height;
+            } 
+            else
+            {
+                return (int)Math.Round(y);
+            }
         }
         public bool Update()
         {
@@ -95,8 +130,8 @@ namespace KSInterface
             {
                 windowRect = KSDllWrapper.GetHearthstoneWindow();
                 aspect = KSDllWrapper.GetAspectRatio(); // TODO handle Exception
-            } 
-            catch (Win32Exception)
+            }
+            catch (Exception)
             {
                 return false;
             }
@@ -147,13 +182,53 @@ namespace KSInterface
             // Normed for 1024x768
             scale = windowRect.height / 768.0;
 
-            using (Bitmap b = ImageHelper.GetBitmap())
+            if (timer == null)
             {
-		    b.
+                timer = new System.Threading.Timer(FetchAndProcessImage,null,0,100);
             }
-
             return true;
         }
+	public virtual void Stop()
+        {
+            timer.Dispose();
+            timer = null;
+        }
+	private void FetchAndProcessImage(Object state)
+        {
+            bool saveReality = realityActive;
+            bool saveRandom = randomActive;
+            realityActive = false;
+            randomActive = false;
+            //using (Bitmap screen = ImageHelper.GetBitmap())
+            Bitmap screen = ImageHelper.GetBitmap(scale, margin);
+            using (Graphics g = Graphics.FromImage(screen))
+            {
+                for (int i = 0; i < friendly_mobs; i++)
+                {
+		    Point p = GetMob(false, i);
+		    //g.DrawEllipse(Pens.HotPink, p.x-mobMin.x/2, p.y-mobMin.y/2, mobMin.x, mobMin.y);
+		    using (Bitmap m = new Bitmap(mob.x, (int)(mob.y*0.6)))
+		    using (Graphics gm = Graphics.FromImage(m))
+		    {
+			gm.DrawImage(screen, 0, 0, new System.Drawing.Rectangle(p.x-mobMin.x/2, p.y-mobMin.y/2,mobMin.x, mobMin.y), GraphicsUnit.Pixel);
+			m.Save(@"C:/test/" + i.ToString() + ".bmp"); 
+		    }
+		    g.Flush();
+                }
+                for (int i = 0; i < enemy_mobs; i++)
+                {
+		    Point p = GetMob(true, i);
+		    g.DrawRectangle(Pens.HotPink, p.x-mob.x/2, p.y-mob.y/2, mob.x, mob.y);
+		    g.Flush();
+                }
+            }
 
+            if (screen != null)
+            {
+                MainForm.mf.SetImage(screen);
+            }
+            realityActive = saveReality;
+            randomActive = saveRandom;
+        }
     }
 }
