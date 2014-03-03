@@ -36,7 +36,16 @@ KSDLL_API LONG GetWindowWidth(HWND hWnd);
 KSDLL_API LONG GetWindowHeight(HWND hWnd);
 
 /* Image recognition */
-static vector<uint8_t*> hashes;
-static vector<char*> names;
-KSDLL_API BOOL InitializeDatabase(const char* dir);
-KSDLL_API const char* RecognizeImage(const char* img);
+#define HASH uint8_t*
+#define HASHFUNC ph_mh_imagehash
+#define HASHCMP ph_hammingdistance2
+/*#define HASH ulong64
+#define HASHFUNC ph_dct_imagehash
+#define HASHCMP ph_hamming_distance*/
+
+static vector<HASH> hashes;
+static vector<PSTR> names;
+KSDLL_API INT InitializeDatabase(PSTR dir);
+KSDLL_API VOID ClearDatabase();
+KSDLL_API PSTR RecognizeImage(PSTR img);
+//KSDLL_API BOOL WriteToFile(PSTR file);

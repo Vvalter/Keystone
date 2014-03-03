@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Collections.Concurrent;
 using System.Drawing;
+using System.IO;
 
 namespace KSInterface
 {
@@ -152,6 +153,35 @@ namespace KSInterface
             return r.width.ToString() + "x" + r.height.ToString();
         }
 
+        #endregion
+
+        #region Image Recognition
+        [DllImport("KSDLL.dll", EntryPoint = "InitializeDatabase", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int _InitializeDatabase([MarshalAs(UnmanagedType.LPStr)] String dir);
+	
+	public static int InitializeDatabase(String dir)
+        {
+            int num = _InitializeDatabase(dir);
+	    if (num == -1)
+		{
+		    Int32 err = Marshal.GetLastWin32Error();
+		    throw new Win32Exception(err);
+		}
+		return num;
+        }
+        [DllImport("KSDLL.dll", EntryPoint = "ClearDatabase", CallingConvention = CallingConvention.Cdecl)]
+	public static extern void ClearDatabase();
+
+        /*[DllImport("KSDLL.dll", EntryPoint = "RecognizeImage", CallingConvention = CallingConvention.Cdecl)]
+	[return : MarshalAs(UnmanagedType.LPStr)]
+	public static extern String RecognizeImage([MarshalAs(UnmanagedType.LPStr)] String img);*/
+        [DllImport("KSDLL.dll", CharSet=CharSet.Ansi, EntryPoint = "RecognizeImage", CallingConvention = CallingConvention.Cdecl)]
+	private static extern IntPtr _RecognizeImage([MarshalAs(UnmanagedType.LPStr)] String img);
+	public static String RecognizeImage(String img)
+        {
+            IntPtr ptr = _RecognizeImage(img);
+            return Marshal.PtrToStringAnsi(ptr);
+        }
         #endregion
     }
 }

@@ -1,0 +1,20 @@
+(I) MainForm:
+	1. Remove static mf [(II)1]
+	2. Rework into 3 Tabs
+		a) Control ::= Start/Stop | Select Database {| Customize Keys}
+		b) Board ::= Show bitmap with hitboxes and descriptions [(II)]
+		c) Log (also in Statusbar everywhere)
+
+(II) Board:
+	1. Add Eventhandler Image Changed
+	2. Remove Timer
+	3. Merge FetchAndProcessImage into Update
+	4. Rework Point to BoardObject
+		a) Coordinates(middle and rectangle) in Screenglobal and normalized to 1024x768
+		b) Getter with random option
+
+	5. workingDir into Constructor
+
+(III) KeyboardController:
+	1. Split from Board
+	2. Call Board.Update() on Keypressed [(II)3]

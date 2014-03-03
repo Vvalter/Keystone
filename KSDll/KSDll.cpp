@@ -102,58 +102,88 @@ KSDLL_API LONG GetWindowHeight(HWND hWnd)
 	GetClientRect(hWnd, &rect);
 	return rect.bottom - rect.top;
 }
-
-/* Image recognition */
-KSDLL_API BOOL InitializeDatabase(const char* dir)
+KSDLL_API INT InitializeDatabase(LPSTR dir)
 {
 	WIN32_FIND_DATAA fd;
-	HANDLE hd = FindFirstFileA(dir, &fd);
+	CHAR dirWithStar[MAX_PATH];
+	strcpy(dirWithStar, dir);
+	strcat(dirWithStar, "\\*");
+	HANDLE hd = FindFirstFileA(dirWithStar, &fd);
 	if (INVALID_HANDLE_VALUE == hd)
 	{
-		return false;
+		return -1;
 	}
 	do
 	{
-		if (fd.dwFileAttributes & FILE_ATTRIBUTE_NORMAL)
+		// Check Extension
+		int len = strlen(fd.cFileName);
+		if (len < 5) continue;
+		if (strcmp(fd.cFileName + len - 4, ".bmp") != 0) continue;
+		if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
-			// Handle fd.cFileName
+			PSTR full_name = (PSTR)::CoTaskMemAlloc(MAX_PATH + 1);
+			strcpy(full_name, dir);
+			strcat(full_name, "\\");
+			strcat(full_name, fd.cFileName);
+
 			int N;
-			uint8_t *hash = ph_mh_imagehash(fd.cFileName, N);
+			HASH hash = HASHFUNC(full_name, N);
+			/*HASH hash;
+			HASHFUNC(full_name, hash);*/
 			hashes.push_back(hash);
-			char* name = (char*)malloc(strlen(dir) + 1);
-			strcpy(name, dir);
-			names.push_back(name);
+			names.push_back(full_name);
 		}
 	} while (FindNextFileA(hd, &fd) != 0);
+
 	if (GetLastError() != ERROR_NO_MORE_FILES)
 	{
-		return false;
+		return -1;
 	}
 	FindClose(hd);
-	return TRUE;
+	return (INT)hashes.size();
 }
 KSDLL_API VOID ClearDatabase()
 {
-	for (uint8_t *hash : hashes)
+	for (HASH hash : hashes)
 	{
-		free(hash);
+		//free(hash);
 	}
-	for (char* name : names)
+	for (PSTR name : names)
 	{
-		free(name);
+		CoTaskMemFree(name);
 	}
 	hashes.clear();
 	names.clear();
 }
-KSDLL_API const char* RecognizeImage(const char* img)
+KSDLL_API PSTR RecognizeImage(PSTR img)
 {
 	int N;
-	uint8_t *img_hash = ph_mh_imagehash(img, N);
-
+	HASH img_hash = HASHFUNC(img, N);
+	/*HASH img_hash;
+	HASHFUNC(img, img_hash);*/
+	int best = 0;
+	double best_score = 1000;
 	
-	for (uint8_t *hash : hashes)
+	for (size_t i = 0; i < hashes.size(); i++)
 	{
-	    
+		double score = HASHCMP(img_hash, N, hashes[i], N);
+		//double score = HASHCMP(img_hash, hashes[i]);
+		if (score < best_score)
+		{
+			best = i;
+			best_score = score;
+		}
 	}
-	return NULL;
+	return names[best];
 }
+
+/*KSDLL_API BOOL WriteToFile(PSTR file)
+{
+	FILE *f = fopen(file, "w");
+	
+	for (int i = 0; i < hashes.size(); i++)
+	{
+		fprintf(f, "%d<>")
+	}
+
+}*/

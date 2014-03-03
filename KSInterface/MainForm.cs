@@ -19,8 +19,8 @@ namespace KSInterface
         private KeyboardController _controller;
         private bool _running = false;
 
-        private delegate void LogCallback(string text, string colorName);
         private delegate void CardCallback(int cards);
+        private delegate void LogCallback(string text, string colorName);
         public MainForm()
         {
             mf = this;

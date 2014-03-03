@@ -6,7 +6,7 @@ namespace KSInterface
 {
     static class ImageHelper
     {
-	public static void ProcessImage(string dir)
+	public static void ProcessImage(String dir, String output)
         {
             var files = Directory.EnumerateFiles(dir);
             foreach (string filename in files)
@@ -17,7 +17,7 @@ namespace KSInterface
                 using (Graphics g = Graphics.FromImage(b2))
                 {
                     g.DrawImage(b, new System.Drawing.Rectangle(0, 0, 162, 150), new System.Drawing.Rectangle(68, 5, 162, 150), GraphicsUnit.Pixel);
-                    b2.Save(Path.Combine(dir, Path.GetFileNameWithoutExtension(filename)+"_converted.bmp"), ImageFormat.Bmp);
+                    b2.Save(Path.Combine(output, Path.GetFileNameWithoutExtension(filename)+"_converted.bmp"), ImageFormat.Bmp);
                 }
 
             }

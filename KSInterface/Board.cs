@@ -211,9 +211,11 @@ namespace KSInterface
 		    using (Graphics gm = Graphics.FromImage(m))
 		    {
 			gm.DrawImage(screen, 0, 0, new System.Drawing.Rectangle(midMob.x-mobMin.x/2, midMob.y-mobMin.y/2,mobMin.x, mobMin.y), GraphicsUnit.Pixel);
-            string st = Path.Combine(workingDir, "mid.bmp");
-            Console.WriteLine(st);
-            m.Save(Path.Combine(workingDir, "mid.bmp"), ImageFormat.Bmp);
+			    string st = Path.Combine(workingDir, "mid.bmp");
+			    Console.WriteLine(st);
+		String path = Path.Combine(workingDir, "mid.bmp");
+		    m.Save(path, ImageFormat.Bmp);
+            Console.WriteLine((enemy ? "Enemy: " : "Friendly: ") + KSDllWrapper.RecognizeImage(path));
             }
 		}
                 /*for (int i = 0; i < friendly_mobs; i++)
