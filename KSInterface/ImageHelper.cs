@@ -1,19 +1,25 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 namespace KSInterface
 {
     static class ImageHelper
     {
-	public static void ProcessImage(string filename, int i)
+	public static void ProcessImage(string dir)
         {
-            System.Console.WriteLine(i);
-            using (Bitmap b = new Bitmap(filename))
-            using (Bitmap b2 = new Bitmap(162, 150))
-            using (Graphics g = Graphics.FromImage(b2))
+            var files = Directory.EnumerateFiles(dir);
+            foreach (string filename in files)
             {
-                g.DrawImage(b, new System.Drawing.Rectangle(0, 0, 162, 150), new System.Drawing.Rectangle(68, 5, 162, 150), GraphicsUnit.Pixel);
-                b2.Save(@"C:\Cards\" + i.ToString() + ".bmp", ImageFormat.Bmp);
+                System.Console.WriteLine("Processing: " + filename);
+                using (Bitmap b = new Bitmap(filename))
+                using (Bitmap b2 = new Bitmap(162, 150))
+                using (Graphics g = Graphics.FromImage(b2))
+                {
+                    g.DrawImage(b, new System.Drawing.Rectangle(0, 0, 162, 150), new System.Drawing.Rectangle(68, 5, 162, 150), GraphicsUnit.Pixel);
+                    b2.Save(Path.Combine(dir, Path.GetFileNameWithoutExtension(filename)+"_converted.bmp"), ImageFormat.Bmp);
+                }
+
             }
         }
         public static Bitmap GetBitmap(double scale, double margin)

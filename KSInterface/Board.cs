@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Forms;
-
-using AForge.Imaging;
-using AForge.Imaging.Filters;
+using System.IO;
+using System.Drawing.Imaging;
 
 namespace KSInterface
 {
@@ -39,6 +38,7 @@ namespace KSInterface
     }
     class Board
     {
+        private string workingDir = @"C:\Keystone\";
         private System.Threading.Timer timer;
         private Random random = new Random();
         protected bool randomActive = true;
@@ -203,7 +203,20 @@ namespace KSInterface
             Bitmap screen = ImageHelper.GetBitmap(scale, margin);
             using (Graphics g = Graphics.FromImage(screen))
             {
-                for (int i = 0; i < friendly_mobs; i++)
+		foreach (bool enemy in new bool[]{true, false})
+		{
+		    /* Check if there's on in the middle */
+		    Point midMob = new Point(middle.x, (middle.y + (enemy ? (-mobDistance) : (mobDistance))));
+		    using (Bitmap m = new Bitmap(mobMin.x, (int)(mob.y*0.6)))
+		    using (Graphics gm = Graphics.FromImage(m))
+		    {
+			gm.DrawImage(screen, 0, 0, new System.Drawing.Rectangle(midMob.x-mobMin.x/2, midMob.y-mobMin.y/2,mobMin.x, mobMin.y), GraphicsUnit.Pixel);
+            string st = Path.Combine(workingDir, "mid.bmp");
+            Console.WriteLine(st);
+            m.Save(Path.Combine(workingDir, "mid.bmp"), ImageFormat.Bmp);
+            }
+		}
+                /*for (int i = 0; i < friendly_mobs; i++)
                 {
 		    Point p = GetMob(false, i);
 		    //g.DrawEllipse(Pens.HotPink, p.x-mobMin.x/2, p.y-mobMin.y/2, mobMin.x, mobMin.y);
@@ -220,7 +233,7 @@ namespace KSInterface
 		    Point p = GetMob(true, i);
 		    g.DrawRectangle(Pens.HotPink, p.x-mob.x/2, p.y-mob.y/2, mob.x, mob.y);
 		    g.Flush();
-                }
+                }*/
             }
 
             if (screen != null)

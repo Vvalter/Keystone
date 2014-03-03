@@ -14,7 +14,6 @@ namespace KSInterface
         [STAThread]
         static void Main()
         {
-            for (int i = 0; i < 284; i++) ImageHelper.ProcessImage(@"C:\Cards\" + i.ToString() + ".png", i);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

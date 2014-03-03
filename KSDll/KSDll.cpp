@@ -102,3 +102,58 @@ KSDLL_API LONG GetWindowHeight(HWND hWnd)
 	GetClientRect(hWnd, &rect);
 	return rect.bottom - rect.top;
 }
+
+/* Image recognition */
+KSDLL_API BOOL InitializeDatabase(const char* dir)
+{
+	WIN32_FIND_DATAA fd;
+	HANDLE hd = FindFirstFileA(dir, &fd);
+	if (INVALID_HANDLE_VALUE == hd)
+	{
+		return false;
+	}
+	do
+	{
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_NORMAL)
+		{
+			// Handle fd.cFileName
+			int N;
+			uint8_t *hash = ph_mh_imagehash(fd.cFileName, N);
+			hashes.push_back(hash);
+			char* name = (char*)malloc(strlen(dir) + 1);
+			strcpy(name, dir);
+			names.push_back(name);
+		}
+	} while (FindNextFileA(hd, &fd) != 0);
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+	{
+		return false;
+	}
+	FindClose(hd);
+	return TRUE;
+}
+KSDLL_API VOID ClearDatabase()
+{
+	for (uint8_t *hash : hashes)
+	{
+		free(hash);
+	}
+	for (char* name : names)
+	{
+		free(name);
+	}
+	hashes.clear();
+	names.clear();
+}
+KSDLL_API const char* RecognizeImage(const char* img)
+{
+	int N;
+	uint8_t *img_hash = ph_mh_imagehash(img, N);
+
+	
+	for (uint8_t *hash : hashes)
+	{
+	    
+	}
+	return NULL;
+}

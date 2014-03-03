@@ -1,5 +1,10 @@
 #define KSDLL_API extern "C" __declspec(dllexport)
 
+#include <vector>
+#include "pHash.h"
+
+using namespace std;
+
 // The type of possible callbacks
 typedef VOID (*FUNC) (BOOL, DWORD);
 
@@ -29,3 +34,9 @@ KSDLL_API LONG GetWindowX(HWND hWnd);
 KSDLL_API LONG GetWindowY(HWND hWnd);
 KSDLL_API LONG GetWindowWidth(HWND hWnd);
 KSDLL_API LONG GetWindowHeight(HWND hWnd);
+
+/* Image recognition */
+static vector<uint8_t*> hashes;
+static vector<char*> names;
+KSDLL_API BOOL InitializeDatabase(const char* dir);
+KSDLL_API const char* RecognizeImage(const char* img);
